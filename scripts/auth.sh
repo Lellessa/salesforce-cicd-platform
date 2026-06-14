@@ -2,8 +2,13 @@
 
 set -euo pipefail
 
-ALIAS=$1
+ENVIROMENT=${1:?Usage: auth.sh <dev|it|qa>}
 
-sf org login web \
-  --alias "$ALIAS" \
-  --set-default
+source "../config/enviroments/${ENVIROMENT}.env"
+
+sf org login jwt \
+  --client-id $CONSUMER_KEY \
+  --jwt-key-file $KEY \
+  --username $USERNAME \
+  --alias $ORG_ALIAS \
+  --instance-url $URL
