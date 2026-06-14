@@ -1,12 +1,12 @@
-name: Hello World
+name: Auth
 
 on:
   push:
 
 jobs:
-  hello:
+  auth:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Print menssage
-        run: echo "Hello World"
+      - name: Auth
+        run: bash ../../scripts/auth.sh dev
