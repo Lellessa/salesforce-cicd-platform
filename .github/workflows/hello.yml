@@ -9,4 +9,6 @@ jobs:
 
     steps:
       - name: Auth
-        run: bash scripts/auth.sh dev
+        run: |
+          pwd
+          bash /scripts/auth.sh dev
