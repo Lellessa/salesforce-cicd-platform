@@ -2,7 +2,8 @@
 
 set -euo pipefail
 source utils/common.sh
-source ../config/enviroments/lellessa.env
+
+ORG_ALIAS=${1:?Usage: deploy.sh <dev|it|qa|prod>}
 
 goto_project
 
