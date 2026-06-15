@@ -4,8 +4,9 @@ on:
   push:
 
 jobs:
-  Auth:
+  auth:
     runs-on: ubuntu-latest
+    environment: "dev"
 
     steps:
       - name: Check out repository
@@ -20,5 +21,10 @@ jobs:
 
       - name: Auth
         env:
-          JWT_KEY: ${{ secrets.DEV }}
+          JWT_KEY: ${{ secrets.JWT_KEY }}
+          CONSUMER_KEY: ${{ vars.CONSUMER_KEY }}
+          USERNAME: ${{ vars.USERNAME }}
+          URL: ${{ vars.URL }}
+          ORG_ALIAS: ${{ vars.ORG_ALIAS }}
+          TEST_LEVEL: ${{ vars.TEST_LEVEL }}
         run: bash ./scripts/auth.sh dev
