@@ -19,4 +19,6 @@ jobs:
         run: npm install -g @salesforce/cli
 
       - name: Auth
+        env:
+          JWT_KEY: ${{ secrets.DEV }}
         run: bash ./scripts/auth.sh dev
