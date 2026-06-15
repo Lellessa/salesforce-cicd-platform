@@ -4,7 +4,7 @@ on:
   push:
 
 jobs:
-  execute-script:
+  Auth:
     runs-on: ubuntu-latest
 
     steps:
@@ -12,4 +12,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Auth
-        run: ls -R
+        run: bash ./scripts/auth.sh dev
