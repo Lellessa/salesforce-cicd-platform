@@ -4,9 +4,12 @@ on:
   push:
 
 jobs:
-  auth:
+  execute-script:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: Auth
         run: ls -R
