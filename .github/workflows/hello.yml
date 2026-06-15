@@ -18,10 +18,5 @@ jobs:
       - name: Install Salesforce CLI
         run: npm install -g @salesforce/cli
 
-      - name: Create JWT key file
-        run: |
-          echo "${{ secrets.DEV }}" > server.key
-          chmod 600 server.key
-
       - name: Auth
         run: bash ./scripts/auth.sh dev
