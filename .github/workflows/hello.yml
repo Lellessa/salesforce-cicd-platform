@@ -9,7 +9,4 @@ jobs:
 
     steps:
       - name: Auth
-        run: |
-          ls
-          cd ./
-          ls -l
+        run: cd ./scripts
