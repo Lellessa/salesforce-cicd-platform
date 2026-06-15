@@ -4,7 +4,8 @@ set -euo pipefail
 
 ENVIROMENT=${1:?Usage: auth.sh <dev|it|qa>}
 
-source "../config/enviroments/${ENVIROMENT}.env"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../config/enviroments/${ENVIROMENT}.env"
 
 echo ${{ secrets.DEV }}
 
