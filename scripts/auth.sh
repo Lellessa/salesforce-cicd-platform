@@ -2,10 +2,7 @@
 
 set -euo pipefail
 
-ENVIROMENT=${1:?Usage: auth.sh <dev|it|qa>}
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/../config/enviroments/${ENVIROMENT}.env"
+#ENVIROMENT=${1:?Usage: auth.sh <dev|it|qa>}
 
 echo "$JWT_KEY" > server.key
 chmod 600 server.key
