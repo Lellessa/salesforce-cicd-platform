@@ -2,8 +2,6 @@
 
 set -euo pipefail
 
-#ENVIROMENT=${1:?Usage: auth.sh <dev|it|qa>}
-
 echo "$JWT_KEY" > server.key
 chmod 600 server.key
 
