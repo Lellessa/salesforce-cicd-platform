@@ -6,7 +6,7 @@ on:
 jobs:
   auth:
     runs-on: ubuntu-latest
-    environment: "qa"
+    environment: "it"
 
     steps:
       - name: Check out repository
