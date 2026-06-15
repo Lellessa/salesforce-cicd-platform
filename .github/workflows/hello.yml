@@ -11,5 +11,5 @@ jobs:
       - name: Auth
         run: |
           ls
-          cd scripts/
-          bash auth.sh dev
+          cd ./
+          ls -l
