@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cd "$PROJECT_DIR"
-
 set -euo pipefail
 source ./scripts/utils/common.sh
 

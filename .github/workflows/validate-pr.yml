@@ -18,14 +18,15 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v5
+      - name: Install Node
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
       - name: Install Salesforce CLI
         run: npm install -g @salesforce/cli
 
-      - name: Auth
+      - name: Authentication
         env:
           JWT_KEY: ${{ secrets.JWT_KEY }}
           CONSUMER_KEY: ${{ vars.CONSUMER_KEY }}
