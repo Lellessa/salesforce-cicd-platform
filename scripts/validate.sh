@@ -1,9 +1,8 @@
 #!/bin/bash
 
 set -euo pipefail
-source utils/common.sh
-source ../config/enviroments/lellessa.env
+source ./scripts/utils/common.sh
 
 goto_project
 
-sf project deploy validate --manifest ./manifest/package.xml --target-org $ORG_ALIAS
+sf project deploy validate --manifest ./manifest/package.xml --target-org $ORG_ALIAS --test-level $TEST_LEVEL

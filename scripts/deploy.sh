@@ -1,10 +1,8 @@
 #!/bin/bash
 
 set -euo pipefail
-source utils/common.sh
-
-ORG_ALIAS=${1:?Usage: deploy.sh <dev|it|qa|prod>}
+source ./scripts/utils/common.sh
 
 goto_project
 
-sf project deploy start --manifest ./manifest/package.xml --target-org $ORG_ALIAS
+sf project deploy start --manifest ./manifest/package.xml --target-org $ORG_ALIAS --test-level $TEST_LEVEL
