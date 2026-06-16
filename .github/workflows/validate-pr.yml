@@ -32,10 +32,10 @@ jobs:
           USERNAME: ${{ vars.USERNAME }}
           URL: ${{ vars.URL }}
           ORG_ALIAS: ${{ vars.ORG_ALIAS }}
-          TEST_LEVEL: ${{ vars.TEST_LEVEL }}
         run: bash ./scripts/auth.sh
 
       - name: Validate
         env:
           ORG_ALIAS: ${{ vars.ORG_ALIAS }}
+          TEST_LEVEL: ${{ vars.TEST_LEVEL }}
         run: bash ./scripts/validate.sh
