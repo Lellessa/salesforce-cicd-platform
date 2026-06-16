@@ -1,0 +1,41 @@
+name: Deploy
+
+on:
+    push:
+        branches:
+            - dev
+            - it
+            - qa
+            - prod
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        environment: ${{ github.base_ref }}
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v6
+            
+            - name: Install Node
+              uses: actions/setup-node@v5
+              with:
+                node-version: 22
+
+            - name: Install Salesforce CLI
+              run: npm install -g @salesforce/cli
+
+            - name: Authentication
+              env:
+                JWT_KEY: ${{ secrets.JWT_KEY }}
+                CONSUMER_KEY: ${{ vars.CONSUMER_KEY }}
+                USERNAME: ${{ vars.USERNAME }}
+                URL: ${{ vars.URL }}
+                ORG_ALIAS: ${{ vars.ORG_ALIAS }}
+              run: bash ./scripts/auth.sh
+
+            - name: Deploy
+              env:
+                ORG_ALIAS: ${{ vars.ORG_ALIAS }}
+                TEST_LEVEL: ${{ vars.TEST_LEVEL }}
+              run: bash ./scripts/deploy.sh
