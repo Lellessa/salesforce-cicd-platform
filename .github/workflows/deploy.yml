@@ -11,7 +11,7 @@ on:
 jobs:
     deploy:
         runs-on: ubuntu-latest
-        environment: ${{ github.base_ref }}
+        environment: ${{ github.ref_name }}
 
         steps:
             - name: Check out repository
