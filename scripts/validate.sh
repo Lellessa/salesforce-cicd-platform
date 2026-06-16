@@ -2,7 +2,6 @@
 
 set -euo pipefail
 source utils/common.sh
-source ../config/enviroments/lellessa.env
 
 goto_project
 
