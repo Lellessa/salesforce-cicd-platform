@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -euo pipefail
-source utils/common.sh
+source ./scripts/utils/common.sh
 
 goto_project
 
