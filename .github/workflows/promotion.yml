@@ -1,0 +1,15 @@
+name: Promotion
+
+on:
+    workflow_run:
+        workflows: ["Deploy"]
+        types:
+            - completed
+
+jobs:
+    promote:
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        runs-on: ubuntu-latest
+
+        steps:
+            - run: echo "Create next PR"
