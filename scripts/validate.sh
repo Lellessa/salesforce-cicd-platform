@@ -5,7 +5,7 @@ source ./scripts/utils/common.sh
 
 goto_project
 
-sf project deploy validate --manifest ./manifest/package.xml --target-org $ORG_ALIAS --test-level $TEST_LEVEL --json \
+NO_COLOR=1 sf project deploy validate --manifest ./manifest/package.xml --target-org $ORG_ALIAS --test-level $TEST_LEVEL \
     > validation.txt
 
 cat validation.txt
