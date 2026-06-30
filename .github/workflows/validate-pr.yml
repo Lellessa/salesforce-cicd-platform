@@ -4,6 +4,10 @@ permissions:
   pull-requests: write
   contents: read
 
+permissions:
+  pull-requests: write
+  contents: read
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -45,6 +49,7 @@ jobs:
           TEST_LEVEL: ${{ vars.TEST_LEVEL }}
         run: bash ./scripts/validate.sh
 
+<<<<<<< feature/temp3
 
       - name: Upload validation summary
         uses: actions/upload-artifact@v4
@@ -68,10 +73,15 @@ jobs:
         with:
           name: validation-summary
 
+=======
+>>>>>>> dev
       - name: Comment PR
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh pr comment ${{ github.event.pull_request.number }} \
+<<<<<<< feature/temp3
             --repo "${{ github.repository }}" \
+=======
+>>>>>>> dev
             --body "$(printf '## Validation Results\n\n```\n%s\n```' "$(cat summary.txt)")"
