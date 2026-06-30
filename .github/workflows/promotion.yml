@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        
       - name: Determine Promotion Path
         env:
           SOURCE_BRANCH: ${{ github.event.workflow_run.head_branch }}
