@@ -7,9 +7,12 @@ on:
             - completed
 
 jobs:
-    promote:
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        runs-on: ubuntu-latest
+  promote:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
 
-        steps:
-            - run: echo "Create next PR"
+    steps:
+      - name: Determine Promotion Path
+        env:
+          SOURCE_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: bash ./scripts/promotion.sh
