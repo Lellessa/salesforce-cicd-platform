@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euxo pipefail
+set -euo pipefail
 
 echo "$JWT_KEY" > server.key
 chmod 600 server.key
