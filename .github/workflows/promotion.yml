@@ -1,0 +1,16 @@
+name: Promotion
+
+on:
+    workflow_run:
+        workflows: ["Deploy"]
+        types:
+            - completed
+
+jobs:
+  promote:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine Promotion Path
+        run: bash ./scripts/promotion.sh

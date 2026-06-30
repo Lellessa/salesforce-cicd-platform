@@ -1,4 +1,8 @@
-name: Validate On Pull Request
+name: Validate
+
+permissions:
+  pull-requests: write
+  contents: read
 
 on:
   pull_request:
@@ -21,7 +25,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: 20
 
       - name: Install Salesforce CLI
         run: npm install -g @salesforce/cli
@@ -40,3 +44,34 @@ jobs:
           ORG_ALIAS: ${{ vars.ORG_ALIAS }}
           TEST_LEVEL: ${{ vars.TEST_LEVEL }}
         run: bash ./scripts/validate.sh
+
+
+      - name: Upload validation summary
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-summary
+          path: summary.txt
+
+  comment:
+    needs: validate
+    if: always()
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Download validation summary
+        uses: actions/download-artifact@v4
+        with:
+          name: validation-summary
+
+      - name: Comment PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --repo "${{ github.repository }}" \
+            --body "$(printf '## Validation Results\n\n```\n%s\n```' "$(cat summary.txt)")"
