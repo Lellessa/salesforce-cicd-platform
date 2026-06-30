@@ -4,8 +4,6 @@ set -euo pipefail
 
 SOURCE_BRANCH="${{ github.event.workflow_run.head_branch }}"
 
-echo "SOURCE_BRANCH: $SOURCE_BRANCH"
-
 TARGET_BRANCH="default"
 case "$SOURCE_BRANCH" in
     dev)
@@ -23,8 +21,6 @@ case "$SOURCE_BRANCH" in
         ;;
 esac
 
-echo "TARGET_BRANCH: $TARGET_BRANCH"
-
 COUNT=$(gh pr list \
     --base "$TARGET_BRANCH" \
     --head "$SOURCE_BRANCH" \
@@ -32,17 +28,20 @@ COUNT=$(gh pr list \
     --json number \
     --jq 'length')
 
-echo "COUNT: $COUNT"
+if [ "$COUNT" -gt 0 ]; then
+    echo "Promotion PR already exists."
+    exit 0
+fi
 
-#gh pr create \
-#    --base "$TARGET_BRANCH" \
-#    --head "$SOURCE_BRANCH" \
-#    --title "Promote $SOURCE_BRANCH → $TARGET_BRANCH" \
-#    --body "
+gh pr create \
+    --base "$TARGET_BRANCH" \
+    --head "$SOURCE_BRANCH" \
+    --title "Promote $SOURCE_BRANCH → $TARGET_BRANCH" \
+    --body "
     ## Automated Promotion
 
-#    Source: \`$SOURCE_BRANCH\`
-#    Target: \`$TARGET_BRANCH\`
+    Source: \`$SOURCE_BRANCH\`
+    Target: \`$TARGET_BRANCH\`
 
-#    Generated automatically after successful deployment.
-#    "
+    Generated automatically after successful deployment.
+    "
