@@ -4,6 +4,10 @@ permissions:
   pull-requests: write
   contents: read
 
+permissions:
+  pull-requests: write
+  contents: read
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
