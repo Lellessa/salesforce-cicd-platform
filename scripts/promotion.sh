@@ -2,8 +2,6 @@
 
 set -euo pipefail
 
-SOURCE_BRANCH="${{ github.event.workflow_run.head_branch }}"
-
 TARGET_BRANCH="default"
 case "$SOURCE_BRANCH" in
     dev)
