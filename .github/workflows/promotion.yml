@@ -17,5 +17,6 @@ jobs:
         
       - name: Determine Promotion Path
         env:
+          GH_TOKEN: ${{ github.token }}
           SOURCE_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: bash ./scripts/promotion.sh
