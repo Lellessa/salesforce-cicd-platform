@@ -1,0 +1,77 @@
+name: Validate
+
+permissions:
+  pull-requests: write
+  contents: read
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - dev
+      - it
+      - qa
+      - prod
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    environment: ${{ github.base_ref }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli
+
+      - name: Authentication
+        env:
+          JWT_KEY: ${{ secrets.JWT_KEY }}
+          CONSUMER_KEY: ${{ vars.CONSUMER_KEY }}
+          USERNAME: ${{ vars.USERNAME }}
+          URL: ${{ vars.URL }}
+          ORG_ALIAS: ${{ vars.ORG_ALIAS }}
+        run: bash ./scripts/auth.sh
+
+      - name: Validate
+        env:
+          ORG_ALIAS: ${{ vars.ORG_ALIAS }}
+          TEST_LEVEL: ${{ vars.TEST_LEVEL }}
+        run: bash ./scripts/validate.sh
+
+
+      - name: Upload validation summary
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-summary
+          path: summary.txt
+
+  comment:
+    needs: validate
+    if: always()
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Download validation summary
+        uses: actions/download-artifact@v4
+        with:
+          name: validation-summary
+
+      - name: Comment PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --repo "${{ github.repository }}" \
+            --body "$(printf '## Validation Results\n\n```\n%s\n```' "$(cat summary.txt)")"
