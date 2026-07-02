@@ -1,9 +1,13 @@
-#/bin/bash
+#!/bin/bash
 
 set -euo pipefail
 
-ALIAS=$1
+echo "$JWT_KEY" > server.key
+chmod 600 server.key
 
-sf org login web \
-  --alias "$ALIAS" \
-  --set-default
+sf org login jwt \
+  --client-id $CONSUMER_KEY \
+  --jwt-key-file server.key \
+  --username $USERNAME \
+  --alias $ORG_ALIAS \
+  --instance-url $URL
