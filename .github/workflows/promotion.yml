@@ -9,6 +9,10 @@ on:
         workflows: ["Deploy"]
         types:
             - completed
+        branches:
+          - dev
+          - it
+          - qa
 
 jobs:
   promote:
