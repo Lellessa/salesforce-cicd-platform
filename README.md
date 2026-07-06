@@ -1,72 +1,134 @@
-# Salesforce CI/CD Platform
+## 🔐 Salesforce CI/CD Integration Setup
 
-A personal CI/CD pipeline for Salesforce using Bash and GitHub Actions. This repository contains scripts and workflows to automate authentication, validation, packaging, and deployment of Salesforce metadata.
+Follow these steps to configure a Salesforce organization for authentication with the CI/CD pipeline using the JWT Bearer Flow.
 
-**Key features**
-- Lightweight Bash-based pipeline for Salesforce DX (SFDX) workflows
-- GitHub Actions for CI and CD
-- Scripts for auth, deploy, validate, and notifications
-- Modular structure for reusing scripts across repositories
+### 1. Create the Permission Set
 
-**Repository structure**
-- `auth/` — authentication helpers and credential setup scripts
-- `deploy/` — deployment scripts and helpers
-- `validate/` — pre-deploy validation and tests
-- `notifications/` — post-deploy notifications
-- `scripts/` — top-level orchestrator scripts
-- `utils/` — utility helpers used by scripts and workflows
-- `github/workflows/` — GitHub Actions workflows
-- `src/` — sample or template Salesforce metadata (if present)
-- `tests/` — test helpers and examples
-- `package.xml` — package manifest for deployments
+Create a new Permission Set with the following configuration:
 
-Prerequisites
-- Git
-- Bash (GNU Bash)
-- Salesforce CLI (SFDX) installed and on `PATH`
-- A GitHub repository with Actions enabled
+| Property | Value |
+|----------|-------|
+| Name | `JWT Access` |
 
-Quick start
-1. Clone the repo:
+Enable the following permissions:
 
-```bash
-git clone <your-repo-url>
-cd salesforce-cicd-platform
-```
-
-2. Review and configure secrets in your GitHub repository settings:
-- `SFDX_AUTH_URL` or other SFDX auth methods
-- Any environment or org-specific variables used by scripts
-
-3. Inspect workflows in `github/workflows/` and customize as needed.
-
-Usage
-- Local dry-run: run validation and linting scripts in `validate/`:
-
-```bash
-bash scripts/validate.sh
-```
-
-- Deploy to a target org (example):
-
-```bash
-bash scripts/deploy.sh --target-org my-scratch-org
-```
-
-CI/CD (GitHub Actions)
-- Workflows in `github/workflows/` orchestrate tests, validation, packaging, and deployments.
-- Typical flow: `push` → run validation/tests → create package artifact → `deploy` on `main` or via `workflow_dispatch`.
-
-Contributing
-- Open issues for improvements or bugs
-- Send PRs with clear descriptions and tests for new behavior
-
-License
-- This project is personal — adjust or add a license file if you plan to publish it.
-
-Contact
-- Maintainer: You (personal project)
+- **API Only User**
+- **Modify All Data**
 
 ---
 
-If you'd like, I can: add a CONTRIBUTING.md, commit these changes, or create a sample GitHub Actions workflow. What would you like next?
+### 2. Create the CI/CD Integration User
+
+Create a dedicated integration user for the pipeline.
+
+| Property | Value |
+|----------|-------|
+| Name | CI/CD Pipeline Integration |
+| Username | `pipeline.integration@your-domain.<environment>` |
+| Email | A shared technical email address |
+| Profile | System Administrator |
+
+After creating the user, assign the **JWT Access** permission set.
+
+> **Recommendation:** Use a dedicated integration user that is not associated with any individual developer.
+
+---
+
+### 3. Generate the JWT Certificate
+
+Generate a private key:
+
+```bash
+openssl genrsa -out server.key 2048
+```
+
+Generate a self-signed certificate:
+
+```bash
+openssl req -new -x509 -key server.key -sha256 -out server.crt
+```
+
+Store the generated files securely:
+
+- `server.key` → **Never commit to Git**
+- `server.crt`
+
+---
+
+### 4. Create the External Client App
+
+Create an External Client App with the following configuration.
+
+#### General
+
+| Property | Value |
+|----------|-------|
+| Name | CI/CD Platform |
+| Contact Email | Shared technical email |
+
+#### OAuth Settings
+
+Callback URL:
+
+```
+https://login.salesforce.com/services/oauth2/success
+```
+
+OAuth Scopes:
+
+- Manage user data via APIs (`api`)
+- Full access (`full`)
+- Perform requests at any time (`refresh_token`, `offline_access`)
+
+Additional settings:
+
+- ✅ Enable JWT Bearer Flow
+- Upload the generated `server.crt`
+
+#### Policies
+
+Configure the following:
+
+| Setting | Value |
+|---------|-------|
+| Permitted Users | Admin approved users are pre-authorized |
+| Pre-authorized Permission Set | JWT Access |
+
+---
+
+### 5. Configure the GitHub Environment
+
+Create one GitHub Environment for each Salesforce enviroment.
+
+Examples:
+
+- `dev`
+- `it`
+- `qa`
+- `prod`
+
+#### Secrets
+
+| Name | Description |
+|------|-------------|
+| `JWT_KEY` | Contents of `server.key` |
+
+#### Variables
+
+| Name | Example |
+|------|---------|
+| `CONSUMER_KEY` | Consumer Key from the External Client App |
+| `ORG_ALIAS` | `dev`, `it`, `qa`, or `prod` |
+| `TEST_LEVEL` | e.g. `RunLocalTests` |
+| `URL` | `https://login.salesforce.com` (or your My Domain URL if applicable) |
+| `USERNAME` | `pipeline.integration@your-domain.prod` |
+
+---
+
+## Security Recommendations
+
+- Never commit `server.key` to the repository.
+- Store all sensitive values as GitHub Secrets.
+- Use a dedicated integration user instead of a personal account.
+- Rotate certificates and credentials periodically.
+- Grant only the permissions required for the pipeline to operate.
