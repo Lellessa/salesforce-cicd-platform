@@ -37,13 +37,13 @@ jobs:
           USERNAME: ${{ vars.USERNAME }}
           URL: ${{ vars.URL }}
           ORG_ALIAS: ${{ vars.ORG_ALIAS }}
-        run: bash .github/workflow/scripts/auth.sh
+        run: bash ./.github/workflows/scripts/auth.sh
 
       - name: Validate
         env:
           ORG_ALIAS: ${{ vars.ORG_ALIAS }}
           TEST_LEVEL: ${{ vars.TEST_LEVEL }}
-        run: bash .github/workflow/scripts/validate.sh
+        run: bash ./.github/workflows/scripts/validate.sh
 
 
       - name: Upload validation summary
