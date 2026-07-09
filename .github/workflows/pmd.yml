@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-java@v4
         with:
@@ -32,22 +34,31 @@ jobs:
           curl -L https://github.com/pmd/pmd/releases/download/pmd_releases/7.15.0/pmd-dist-7.15.0-bin.zip -o pmd.zip
           unzip pmd.zip
 
-      - name: Run PMD
+      - name: Find changed Apex files
+        id: changed
         run: |
-          mkdir reports
+          FILES=$(git diff --diff-filter=d --name-only \
+            origin/${{ github.base_ref }}...HEAD \
+            | grep -E '\.(cls|trigger)$' \
+            | paste -sd "," -)
 
+          echo "files=$FILES" >> "$GITHUB_OUTPUT"
+
+      - name: Run PMD
+        if: steps.changed.outputs.files != ''
+        run: |
           ./pmd-bin-7.15.0/bin/pmd check \
-            -d force-app \
+            -d "${{ steps.changed.outputs.files }}" \
             -R rulesets/apex/quickstart.xml \
-            -f sarif \
-            -r pmd-report.sarif || true
+            -f xml \
+            -r pmd-report.xml || true
 
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pmd-report
-          path: pmd-report.sarif
+          path: pmd-report.xml
 
   comment:
     needs: pmd
@@ -70,4 +81,4 @@ jobs:
         run: |
           gh pr comment ${{ github.event.pull_request.number }} \
             --repo "${{ github.repository }}" \
-            --body "$(printf '## PMD Analysis\n\n```\n%s\n```' "$(cat pmd-report.sarif)")"
+            --body "$(printf '## PMD Analysis\n\n```\n%s\n```' "$(cat pmd-report.xml)")"
