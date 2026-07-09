@@ -152,7 +152,6 @@ If there are no findings, respond exactly with:
 
 ## Response Format
 
-````markdown
 # PMD Review
 
 Found **{{TOTAL_FINDINGS}}** issue(s).
@@ -174,11 +173,8 @@ Found **{{TOTAL_FINDINGS}}** issue(s).
 **Recommended fix**
 
 {{RECOMMENDATION}}
-````
 
 ## PMD Report
-
-
 
 {chr(10).join(sections)}
         """
