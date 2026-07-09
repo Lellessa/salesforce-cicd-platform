@@ -135,8 +135,7 @@ Your objective is to help the developer understand each issue and provide clear,
 
 - Return **ONLY** valid GitHub Markdown.
 - Follow the **Response Template** exactly.
-- Be concise, factual, and professional.
-- Write as an experienced Salesforce Technical Architect performing a code review.
+- Always escape code fences!
 - Group findings using the following hierarchy:
   1. File
   2. Rule
@@ -152,7 +151,6 @@ Your objective is to help the developer understand each issue and provide clear,
   - The PMD rule.
   - The PMD message.
   - The provided source code snippet.
-- Do **NOT** exaggerate the severity of issues.
 
 ### Code Examples
 
@@ -214,15 +212,17 @@ Found **{{TOTAL_FINDINGS}}** issue(s).
 
 **Suggested code** *(optional)*
 
-\`\`\`apex
+```apex
 {{CODE}}
-\`\`\`
+```
+````
 
 ---
 
 END OF REVIEW
 
 ## PMD Report
+
 
 
 {chr(10).join(sections)}
