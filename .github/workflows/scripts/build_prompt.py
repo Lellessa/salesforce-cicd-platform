@@ -119,25 +119,61 @@ def build_prompt(findings: dict[str, list[dict]]) -> str:
 
     return textwrap.dedent(
         f"""
-You are a Senior Salesforce Technical Architect reviewing a Pull Request.
+## Objective
+Analyze the PMD XML report and generate a Markdown review using the template below.
 
-The following PMD findings were detected.
+## Requirements
+- Group findings by PMD rule (do not repeat the same rule).
+- Count occurrences of each rule.
+- Include all affected files and line numbers under "Locations".
+- For each finding, provide:
+  - Rule
+  - Locations
+  - Issue
+  - Fix
+- Include a minimal code example only when it helps explain the fix.
+- Keep explanations concise (1–2 sentences).
+- Do not invent code specific to the project; use generic Apex examples.
+- Finish with a short list of recommendations.
 
-There are **{total} violations** across **{len(findings)} file(s)**.
+## Formatting
+- Wrap all file names, file paths, PMD rule names, class names, method names, variable names, and other code identifiers in inline code using single backticks (`...`).
+- Do not use bold or plain text for code-related identifiers; always use inline code formatting.
+- Reserve fenced code blocks (```...```) only for multi-line code examples.
 
-For each finding:
+## Response Format
+# PMD Review
 
-1. Explain what the rule means.
-2. Explain why it matters.
-3. Suggest the best fix.
-4. If possible, provide corrected Apex code.
-5. Keep explanations concise.
-6. Return valid GitHub Markdown.
-7. Group your response by file.
+## Summary
 
-If multiple findings are related, avoid repeating the same explanation.
+| File | Issues |
+|------|-------:|
+| `<file>` | `<count>` |
 
-----
+---
+
+## Findings
+
+### <Rule Name> (<Count>)
+**Rule:** `<Rule>`
+
+**Locations:**
+- `<file>`: Line(s) `<line(s)>`
+- `<file>`: Line(s) `<line(s)>`
+
+**Issue:**
+<Brief explanation of why this is reported.>
+
+**Fix:**
+<Short description of how to resolve it.>
+
+**Example (if applicable):**
+```<language>
+<Minimal code example>
+```
+
+---
+
 
 {chr(10).join(sections)}
         """
