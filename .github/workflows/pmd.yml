@@ -60,8 +60,57 @@ jobs:
           name: pmd-report
           path: pmd-report.xml
 
-  comment:
+  ai:
     needs: pmd
+    runs-on: ubuntu-latest
+
+    permissions:
+      models: read
+      contents: read
+
+    steps:
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: pmd-report
+
+      - name: Build prompt
+        run: |
+          python3 ./.github/workflows/scripts/build_prompt.py
+
+      - name: Review PMD report
+        id: review
+        uses: actions/ai-inference@v1
+        with:
+          model: openai/gpt-4.1
+          system-prompt: |
+            You are a Salesforce Technical Architect.
+
+            Your job is to review PMD findings.
+
+            Explain every issue in simple language.
+
+            Suggest fixes.
+
+            When appropriate provide corrected Apex code.
+
+            Return ONLY GitHub Markdown.
+
+          prompt-file: prompt.txt
+
+      - name: Save review
+        run: |
+          cat <<'EOF' > ai-review.md
+          ${{ steps.review.outputs.response }}
+          EOF
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-review
+          path: ai-review.md
+
+  comment:
+    needs: ai
     if: always()
     runs-on: ubuntu-latest
 
@@ -70,10 +119,10 @@ jobs:
       contents: read
 
     steps:
-      - name: Download PMD analysis
+      - name: Download AI review
         uses: actions/download-artifact@v4
         with:
-          name: pmd-report
+          name: ai-review
 
       - name: Comment PR
         env:
@@ -81,4 +130,4 @@ jobs:
         run: |
           gh pr comment ${{ github.event.pull_request.number }} \
             --repo "${{ github.repository }}" \
-            --body "$(printf '## PMD Analysis\n\n```\n%s\n```' "$(cat pmd-report.xml)")"
+            --body-file ai-review.md
