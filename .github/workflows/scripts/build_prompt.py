@@ -214,9 +214,9 @@ Found **{{TOTAL_FINDINGS}}** issue(s).
 
 **Suggested code** *(optional)*
 
-<OPEN_APEX_CODE_BLOCK>
+\`\`\`apex
 {{CODE}}
-<CLOSE_CODE_BLOCK>
+\`\`\`
 
 ---
 
