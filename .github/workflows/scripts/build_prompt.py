@@ -119,72 +119,38 @@ def build_prompt(findings: dict[str, list[dict]]) -> str:
 
     return textwrap.dedent(
         f"""
-# AI Review Specification v1.0
+# PMD Review Instructions
 
-## Objective
-
-You are reviewing a Salesforce Pull Request.
-
-Below are the PMD findings detected during static analysis.
-
-Your objective is to help the developer understand each issue and provide clear, actionable guidance to fix it.
-
----
+Review the PMD findings for a Salesforce Pull Request.
 
 ## Requirements
 
-- Return **ONLY** valid GitHub Markdown.
-- Follow the **Response Template** exactly.
-- Always escape code fences!
-- Group findings using the following hierarchy:
+- Return **only** valid GitHub Markdown.
+- Group findings by:
   1. File
   2. Rule
   3. Affected lines
 - If the same rule appears multiple times in the same file:
   - Explain the rule only once.
   - List all affected lines.
-  - Provide a single recommendation.
-- Avoid repeating explanations.
-- Do **NOT** rewrite an entire Apex class.
-- Do **NOT** infer code that is not present in the provided code snippets.
-- Base your explanations only on:
-  - The PMD rule.
-  - The PMD message.
-  - The provided source code snippet.
+  - Provide one recommendation.
+- Base your explanation only on:
+  - The PMD rule
+  - The PMD message
+  - The provided source code
+- Do not infer missing code.
+- Do not rewrite entire classes or methods.
+- Do not include greetings, conclusions, or generic advice.
 
-### Code Examples
+## No Findings
 
-Only include a **Suggested code** section when a short code example adds value to the explanation.
-
-If a code example is included:
-
-- Show **ONLY** the relevant lines to change.
-- Maximum **15 lines**.
-- Wrap the code in a fenced Markdown code block using the `apex` language.
-- Every opening code fence **MUST** have a matching closing code fence.
-- Never leave a code block unclosed.
-
-### Do NOT Include
-
-- Greetings.
-- Conclusions.
-- Generic advice.
-- Explanations unrelated to the finding.
-- Entire classes or methods unless absolutely necessary.
-
----
-
-## No Findings Response
-
-If there are no findings, respond **exactly** with:
+If there are no findings, respond exactly with:
 
 ```text
 ✅ No PMD violations were found.
 ```
 
----
-
-## Response Template
+## Response Format
 
 ````markdown
 # PMD Review
@@ -200,7 +166,6 @@ Found **{{TOTAL_FINDINGS}}** issue(s).
 **Affected lines**
 
 - {{LINE}}
-- {{LINE}}
 
 **Why PMD reported this**
 
@@ -208,18 +173,8 @@ Found **{{TOTAL_FINDINGS}}** issue(s).
 
 **Recommended fix**
 
-{{FIX}}
-
-**Suggested code** *(optional)*
-
-```apex
-{{CODE}}
-```
+{{RECOMMENDATION}}
 ````
-
----
-
-END OF REVIEW
 
 ## PMD Report
 
