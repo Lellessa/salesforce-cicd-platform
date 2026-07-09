@@ -76,7 +76,7 @@ jobs:
 
       - name: Build prompt
         run: |
-          python3 ./.github/workflows/scripts/build_prompt.py
+          python3 .github/workflows/scripts/build_prompt.py
 
       - name: Review PMD report
         id: review
