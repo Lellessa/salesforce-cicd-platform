@@ -86,6 +86,7 @@ jobs:
         uses: actions/ai-inference@v1
         with:
           model: openai/gpt-4.1
+          max-tokens: 1500
           system-prompt: You are a Salesforce Technical Architect.
           prompt-file: prompt.txt
 
