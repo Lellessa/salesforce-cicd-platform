@@ -119,25 +119,111 @@ def build_prompt(findings: dict[str, list[dict]]) -> str:
 
     return textwrap.dedent(
         f"""
-You are a Senior Salesforce Technical Architect reviewing a Pull Request.
+# AI Review Specification v1.0
 
-The following PMD findings were detected.
+## Objective
 
-There are **{total} violations** across **{len(findings)} file(s)**.
+You are reviewing a Salesforce Pull Request.
 
-For each finding:
+Below are the PMD findings detected during static analysis.
 
-1. Explain what the rule means.
-2. Explain why it matters.
-3. Suggest the best fix.
-4. If possible, provide corrected Apex code.
-5. Keep explanations concise.
-6. Return valid GitHub Markdown.
-7. Group your response by file.
+Your objective is to help the developer understand each issue and provide clear, actionable guidance to fix it.
 
-If multiple findings are related, avoid repeating the same explanation.
+---
 
-----
+## Requirements
+
+- Return **ONLY** valid GitHub Markdown.
+- Follow the **Response Template** exactly.
+- Be concise, factual, and professional.
+- Write as an experienced Salesforce Technical Architect performing a code review.
+- Group findings using the following hierarchy:
+  1. File
+  2. Rule
+  3. Affected lines
+- If the same rule appears multiple times in the same file:
+  - Explain the rule only once.
+  - List all affected lines.
+  - Provide a single recommendation.
+- Avoid repeating explanations.
+- Do **NOT** rewrite an entire Apex class.
+- Do **NOT** infer code that is not present in the provided code snippets.
+- Base your explanations only on:
+  - The PMD rule.
+  - The PMD message.
+  - The provided source code snippet.
+- Do **NOT** exaggerate the severity of issues.
+
+### Code Examples
+
+Only include a **Suggested code** section when a short code example adds value to the explanation.
+
+If a code example is included:
+
+- Show **ONLY** the relevant lines to change.
+- Maximum **15 lines**.
+- Wrap the code in a fenced Markdown code block using the `apex` language.
+- Every opening code fence **MUST** have a matching closing code fence.
+- Never leave a code block unclosed.
+
+### Do NOT Include
+
+- Greetings.
+- Conclusions.
+- Generic advice.
+- Explanations unrelated to the finding.
+- Entire classes or methods unless absolutely necessary.
+
+---
+
+## No Findings Response
+
+If there are no findings, respond **exactly** with:
+
+```text
+✅ No PMD violations were found.
+```
+
+---
+
+## Response Template
+
+````markdown
+# PMD Review
+
+Found **{{TOTAL_FINDINGS}}** issue(s).
+
+---
+
+## File: `{{FILE_NAME}}`
+
+### Rule: `{{RULE_NAME}}`
+
+**Affected lines**
+
+- {{LINE}}
+- {{LINE}}
+
+**Why PMD reported this**
+
+{{EXPLANATION}}
+
+**Recommended fix**
+
+{{FIX}}
+
+**Suggested code** *(optional)*
+
+<OPEN_APEX_CODE_BLOCK>
+{{CODE}}
+<CLOSE_CODE_BLOCK>
+
+---
+
+END OF REVIEW
+
+## PMD Report
+
 
 {chr(10).join(sections)}
         """

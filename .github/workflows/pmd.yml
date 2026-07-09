@@ -86,26 +86,14 @@ jobs:
         uses: actions/ai-inference@v1
         with:
           model: openai/gpt-4.1
-          system-prompt: |
-            You are a Salesforce Technical Architect.
-
-            Your job is to review PMD findings.
-
-            Explain every issue in simple language.
-
-            Suggest fixes.
-
-            When appropriate provide corrected Apex code.
-
-            Return ONLY GitHub Markdown.
-
+          system-prompt: You are a Salesforce Technical Architect.
           prompt-file: prompt.txt
 
       - name: Save review
+        env:
+          REVIEW: ${{ steps.review.outputs.response }}
         run: |
-          cat <<'EOF' > ai-review.md
-          ${{ steps.review.outputs.response }}
-          EOF
+          printf "%s" "$REVIEW" > ai-review.md
 
       - uses: actions/upload-artifact@v4
         with:
