@@ -1,0 +1,161 @@
+name: Static Analysis
+
+permissions:
+  pull-requests: write
+  contents: read
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - dev
+      - it
+      - qa
+      - prod
+
+jobs:
+
+  get-files:
+    runs-on: ubuntu-latest
+
+    outputs:
+      changed: ${{ steps.changed.outputs.changed }}
+      files: ${{ steps.changed.outputs.files }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Find changed Apex files
+        id: changed
+        run: |
+          FILES=$(git diff --diff-filter=d --name-only \
+            origin/${{ github.base_ref }}...HEAD \
+            | grep -E '\.(cls|trigger)$' \
+            | paste -sd "," -)
+
+          echo "files=$FILES" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$FILES" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  pmd:
+    needs: get-files
+    if: needs.get-files.outputs.changed == 'true'
+
+    runs-on: ubuntu-latest
+    environment: ${{ github.base_ref }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Download PMD
+        run: |
+          curl -L https://github.com/pmd/pmd/releases/download/pmd_releases/7.15.0/pmd-dist-7.15.0-bin.zip -o pmd.zip
+          unzip pmd.zip
+
+      - name: Run PMD
+        run: |
+          ./pmd-bin-7.15.0/bin/pmd check \
+            -d "${{ needs.get-files.outputs.files }}" \
+            -R rulesets/apex/quickstart.xml \
+            -f xml \
+            -r pmd-report.xml || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pmd-report
+          path: pmd-report.xml
+
+  ai:
+    needs:
+      - get-files
+      - pmd
+
+    if: needs.get-files.outputs.changed == 'true'
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      models: read
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: pmd-report
+
+      - name: Build prompt
+        run: |
+          python3 .github/workflows/scripts/build_prompt.py
+
+      - name: Review PMD report
+        id: review
+        uses: actions/ai-inference@v1
+        with:
+          model: openai/gpt-4.1
+          max-tokens: 1500
+          system-prompt: You are a Salesforce Technical Architect.
+          prompt-file: prompt.txt
+
+      - name: Save review
+        env:
+          REVIEW: ${{ steps.review.outputs.response }}
+        run: |
+          printf "%s" "$REVIEW" > ai-review.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-review
+          path: ai-review.md
+
+  comment:
+    needs:
+      - get-files
+      - ai
+
+    if: always()
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Download AI review
+        if: needs.get-files.outputs.changed == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: ai-review
+
+      - name: Comment AI review
+        if: needs.get-files.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --repo "${{ github.repository }}" \
+            --body-file ai-review.md
+
+      - name: Comment skipped analysis
+        if: needs.get-files.outputs.changed != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --repo "${{ github.repository }}" \
+            --body "✅ No Apex classes or triggers were modified in this pull request. Static analysis was skipped."
