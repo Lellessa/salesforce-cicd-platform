@@ -1,41 +1,41 @@
 name: Deploy
 
 on:
-    push:
-        branches:
-            - dev
-            - it
-            - qa
-            - prod
+  push:
+    branches:
+      - dev
+      - it
+      - qa
+      - prod
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
-        environment: ${{ github.ref_name }}
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
 
-        steps:
-            - name: Check out repository
-              uses: actions/checkout@v6
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
             
-            - name: Install Node
-              uses: actions/setup-node@v5
-              with:
-                node-version: 20
+      - name: Install Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
 
-            - name: Install Salesforce CLI
-              run: npm install -g @salesforce/cli
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli
 
-            - name: Authentication
-              env:
-                JWT_KEY: ${{ secrets.JWT_KEY }}
-                CONSUMER_KEY: ${{ vars.CONSUMER_KEY }}
-                USERNAME: ${{ vars.USERNAME }}
-                URL: ${{ vars.URL }}
-                ORG_ALIAS: ${{ vars.ORG_ALIAS }}
-              run: bash ./.github/workflows/scripts/auth.sh
+      - name: Authentication
+        env:
+          JWT_KEY: ${{ secrets.JWT_KEY }}
+          CONSUMER_KEY: ${{ vars.CONSUMER_KEY }}
+          USERNAME: ${{ vars.USERNAME }}
+          URL: ${{ vars.URL }}
+          ORG_ALIAS: ${{ vars.ORG_ALIAS }}
+        run: bash ./.github/workflows/scripts/auth.sh
 
-            - name: Deploy
-              env:
-                ORG_ALIAS: ${{ vars.ORG_ALIAS }}
-                TEST_LEVEL: ${{ vars.TEST_LEVEL }}
-              run: bash ./.github/workflows/scripts/deploy.sh
+      - name: Deploy
+        env:
+            ORG_ALIAS: ${{ vars.ORG_ALIAS }}
+            TEST_LEVEL: ${{ vars.TEST_LEVEL }}
+        run: bash ./.github/workflows/scripts/deploy.sh

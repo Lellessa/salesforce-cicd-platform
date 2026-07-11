@@ -54,5 +54,5 @@ $RECYCLE.BIN/
 # SFDX common lib
 .sfdx/
 
-# Instruções para criar a esteira
-INSTRUCTIONS.md
+# VS Code
+.vscode/
