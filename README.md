@@ -1,134 +1,313 @@
-## 🔐 Salesforce CI/CD Integration Setup
+# Salesforce CI/CD Platform
 
-Follow these steps to configure a Salesforce organization for authentication with the CI/CD pipeline using the JWT Bearer Flow.
+A CI/CD platform for Salesforce projects built with GitHub Actions, Salesforce CLI, GitHub CLI, PMD, and AI-assisted code review.
 
-### 1. Create the Permission Set
-
-Create a new Permission Set with the following configuration:
-
-| Property | Value |
-|----------|-------|
-| Name | `JWT Access` |
-
-Enable the following permissions:
-
-- **API Only User**
-- **Modify All Data**
+This project was created as a learning project and portfolio piece to explore Salesforce DevOps practices, GitHub Actions automation, and AI integration into development workflows.
 
 ---
 
-### 2. Create the CI/CD Integration User
+# Overview
 
-Create a dedicated integration user for the pipeline.
+The platform automates the complete deployment lifecycle across multiple Salesforce environments.
 
-| Property | Value |
-|----------|-------|
-| Name | CI/CD Pipeline Integration |
-| Username | `pipeline.integration@your-domain.<environment>` |
-| Email | A shared technical email address |
-| Profile | System Administrator |
+It performs:
 
-After creating the user, assign the **JWT Access** permission set.
-
-> **Recommendation:** Use a dedicated integration user that is not associated with any individual developer.
+- Static code analysis with PMD
+- AI-assisted code review
+- Deployment validation
+- Metadata deployment
+- Automatic environment promotion
+- Secure JWT authentication
+- Automated Pull Request creation
 
 ---
 
-### 3. Generate the JWT Certificate
+# Key Features
 
-Generate a private key:
+- Multi-environment pipeline (DEV → IT → QA → PROD)
+- PMD static analysis for Apex
+- AI review based on PMD findings
+- Optimized AI prompt generation to reduce token usage
+- Deployment validation using Salesforce CLI
+- Automated metadata deployment
+- Automatic environment promotion
+- JWT Bearer Flow authentication
+- Environment isolation with GitHub Environments
+- Pull Request comments with validation and AI review
+- Changed metadata detection for faster executions
+
+---
+
+# Architecture
+![Architecture](.github/assets/architecture.png)
+
+### Main Components
+
+- **GitHub Actions** — Workflow orchestration
+- **Salesforce CLI (`sf`)** — Authentication, validation and deployment
+- **GitHub CLI (`gh`)** — Automatic Pull Request creation
+- **PMD** — Apex static analysis
+- **Python** — PMD report optimization and AI prompt generation
+- **Bash** — Deployment automation scripts
+
+---
+
+# GitFlow Strategy
+![GitFlow](.github/assets/gitflow.png)
+
+### Responsibilities
+
+| Branch | Purpose |
+|---------|----------|
+| feature/* | Development |
+| dev | Development Environment |
+| it | Integration Testing |
+| qa | Quality Assurance |
+| prod | Production |
+
+---
+
+# Pipeline Overview
+
+![Pipeline Overview](.github/assets/pipeline_overview.png)
+
+---
+
+# Workflows
+
+## 1. Static Analysis
+
+### Purpose
+
+Analyze modified Apex metadata and provide an AI-assisted review.
+
+### Process
+
+- Detect changed Apex files
+- Execute PMD only on modified metadata
+- Generate PMD XML report
+- Build optimized AI prompt
+- Publish AI review as a Pull Request comment
+
+### AI Review
+
+The `build_prompt.py` script parses the PMD XML report and extracts only the information that is useful for the AI review.
+
+Instead of sending the entire PMD report, it keeps only:
+
+- Relevant violations
+- Rule information
+- File locations
+- Surrounding code snippets
+
+This optimized prompt significantly reduces token consumption while preserving enough context for GPT-4.1 to provide meaningful recommendations.
+
+Outputs:
+
+- `pmd-report.xml`
+- `ai-review.md`
+
+![AI Review](.github/assets/ai_review.png)
+
+---
+
+## 2. Validation
+
+### Purpose
+
+Validate metadata deployment against the target Salesforce environment before deployment.
+
+### Process
+
+- Authenticate using JWT
+- Execute `sf project deploy validate`
+- Use the configured Salesforce `TEST_LEVEL`
+- Parse deployment results
+- Publish a validation report as a Pull Request comment
+
+![Validation Report](.github/assets/validation_report.png)
+
+---
+
+## 3. Deployment
+
+### Purpose
+
+Deploy validated metadata to the target environment.
+
+### Process
+
+- Authenticate using JWT
+- Execute `sf project deploy start`
+- Deploy metadata using the configured Salesforce `TEST_LEVEL`
+
+---
+
+## 4. Promotion
+
+### Purpose
+
+Automatically promote changes between environments.
+
+### Process
+
+- Detect the next environment
+- Create a promotion Pull Request using GitHub CLI (`gh`)
+- Prevent duplicate promotion Pull Requests
+
+Promotion flow:
+
+```
+dev -> it -> qa -> prod
+```
+
+---
+
+# Authentication
+
+The platform uses **JWT Bearer Flow** for secure, headless authentication.
+
+Each environment has its own:
+
+- Connected App
+- JWT certificate
+- GitHub Environment
+- Secrets
+- Variables
+
+## GitHub Secrets
+
+| Secret | Description |
+|----------|-------------|
+| JWT_KEY | Private key used for JWT authentication |
+
+## GitHub Variables
+
+| Variable | Description |
+|----------|-------------|
+| CONSUMER_KEY | Connected App Consumer Key |
+| ORG_ALIAS | Salesforce Org Alias |
+| URL | Salesforce Instance URL |
+| USERNAME | Integration User |
+| TEST_LEVEL | Salesforce deployment test level |
+
+---
+
+# Repository Structure
+
+```text
+.
+├── .github
+│   ├── workflows
+│   └── workflows/scripts
+├── config
+├── force-app
+├── manifest
+├── scripts
+├── package.json
+├── sfdx-project.json
+└── README.md
+```
+
+---
+
+# Technologies
+
+## Languages
+
+- Apex
+- Python
+- Bash
+
+## CI/CD
+
+- GitHub Actions
+- Salesforce CLI (`sf`)
+- GitHub CLI (`gh`)
+
+## Code Quality
+
+- PMD 7.15
+
+## AI
+
+- OpenAI GPT-4.1
+- GitHub AI Inference
+
+## Utilities
+
+- OpenSSL
+- jq
+- Git
+- Prettier
+- Husky
+
+---
+
+# Installation
+
+## Requirements
+
+- Git
+- Node.js
+- Salesforce CLI
+- GitHub Account
+- Salesforce Org
+
+Clone the repository:
 
 ```bash
-openssl genrsa -out server.key 2048
+git clone https://github.com/your-username/salesforce-cicd-platform.git
+
+cd salesforce-cicd-platform
+
+npm install
 ```
 
-Generate a self-signed certificate:
+Install Salesforce CLI:
 
 ```bash
-openssl req -new -x509 -key server.key -sha256 -out server.crt
+npm install -g @salesforce/cli
 ```
-
-Store the generated files securely:
-
-- `server.key` → **Never commit to Git**
-- `server.crt`
 
 ---
 
-### 4. Create the External Client App
+# Configuration
 
-Create an External Client App with the following configuration.
+Create a GitHub Environment for each Salesforce environment:
 
-#### General
+- dev
+- it
+- qa
+- prod
 
-| Property | Value |
-|----------|-------|
-| Name | CI/CD Platform |
-| Contact Email | Shared technical email |
+Configure:
 
-#### OAuth Settings
+### Secrets
 
-Callback URL:
+- JWT_KEY
 
-```
-https://login.salesforce.com/services/oauth2/success
-```
+### Variables
 
-OAuth Scopes:
-
-- Manage user data via APIs (`api`)
-- Full access (`full`)
-- Perform requests at any time (`refresh_token`, `offline_access`)
-
-Additional settings:
-
-- ✅ Enable JWT Bearer Flow
-- Upload the generated `server.crt`
-
-#### Policies
-
-Configure the following:
-
-| Setting | Value |
-|---------|-------|
-| Permitted Users | Admin approved users are pre-authorized |
-| Pre-authorized Permission Set | JWT Access |
+- CONSUMER_KEY
+- USERNAME
+- URL
+- ORG_ALIAS
+- TEST_LEVEL
 
 ---
 
-### 5. Configure the GitHub Environment
+# Future Improvements
 
-Create one GitHub Environment for each Salesforce enviroment.
-
-Examples:
-
-- `dev`
-- `it`
-- `qa`
-- `prod`
-
-#### Secrets
-
-| Name | Description |
-|------|-------------|
-| `JWT_KEY` | Contents of `server.key` |
-
-#### Variables
-
-| Name | Example |
-|------|---------|
-| `CONSUMER_KEY` | Consumer Key from the External Client App |
-| `ORG_ALIAS` | `dev`, `it`, `qa`, or `prod` |
-| `TEST_LEVEL` | e.g. `RunLocalTests` |
-| `URL` | `https://login.salesforce.com` (or your My Domain URL if applicable) |
-| `USERNAME` | `pipeline.integration@your-domain.prod` |
+- Custom PMD rules
+- Slack / Microsoft Teams notifications
+- Deployment dashboard
+- Rollback workflow
+- Manual production approval
+- Additional metadata support
 
 ---
 
-## Security Recommendations
+# License
 
-- Never commit `server.key` to the repository.
-- Store all sensitive values as GitHub Secrets.
-- Use a dedicated integration user instead of a personal account.
-- Rotate certificates and credentials periodically.
-- Grant only the permissions required for the pipeline to operate.
+This project is licensed under the MIT License.
